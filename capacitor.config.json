@@ -1,0 +1,6 @@
+{
+  "appId": "com.driftwave.noise",
+  "appName": "Driftwave",
+  "webDir": "www",
+  "android": { "backgroundColor": "#0e1320" }
+}

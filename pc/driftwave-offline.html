@@ -1,0 +1,1017 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0e1320">
+  <meta name="description" content="Offline ambient noise generator">
+  <title>Driftwave</title>
+  <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj4KICA8ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiMzYTViZDkiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiM3YjNmZDEiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz4KICA8cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjExMiIgZmlsbD0iIzBlMTMyMCIvPgogIDxjaXJjbGUgY3g9IjI1NiIgY3k9IjI1NiIgcj0iMTkwIiBmaWxsPSJ1cmwoI2cpIiBvcGFjaXR5PSIuOSIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2U2ZWJmNSIgc3Ryb2tlLXdpZHRoPSIyMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj4KICAgIDxwYXRoIGQ9Ik0xMjYgMjA2YzMyLTMwIDY0LTMwIDk2IDBzNjQgMzAgOTYgMCA2NC0zMCA2Ni0yIi8+CiAgICA8cGF0aCBkPSJNMTI2IDI2NmMzMi0zMCA2NC0zMCA5NiAwczY0IDMwIDk2IDAgNjQtMzAgNjYtMiIgb3BhY2l0eT0iLjgiLz4KICAgIDxwYXRoIGQ9Ik0xMjYgMzI2YzMyLTMwIDY0LTMwIDk2IDBzNjQgMzAgOTYgMCA2NC0zMCA2Ni0yIiBvcGFjaXR5PSIuNTUiLz4KICA8L2c+Cjwvc3ZnPgo=" type="image/svg+xml">
+  <style>:root {
+  --bg: #0e1320; --panel: #161d2e; --line: #26304a; --text: #e6ebf5; --muted: #8a96b2;
+  --hue: 220; --accent: hsl(var(--hue) 80% 66%); --accent-soft: hsl(var(--hue) 60% 40% / .35);
+  --safe-t: env(safe-area-inset-top, 0px); --safe-b: env(safe-area-inset-bottom, 0px);
+}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { margin: 0; background: var(--bg); color: var(--text);
+  font: 15px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+body { min-height: 100vh; padding: var(--safe-t) 0 calc(var(--safe-b) + 16px);
+  background: radial-gradient(120% 60% at 50% 0%, hsl(var(--hue) 50% 20% / .55), transparent 70%), var(--bg);
+  transition: background .6s; }
+button, select, input { font: inherit; color: inherit; }
+button { cursor: pointer; }
+
+.top { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; }
+.brand { display: flex; align-items: center; gap: 10px; font-weight: 650; letter-spacing: .02em; font-size: 18px; }
+.icon-btn { background: none; border: 1px solid var(--line); border-radius: 10px; width: 40px; height: 40px; font-size: 18px; }
+
+.scapes { display: flex; gap: 8px; overflow-x: auto; padding: 4px 16px 10px; scrollbar-width: none; }
+.scapes::-webkit-scrollbar { display: none; }
+.scape { flex: 0 0 auto; display: flex; flex-direction: column; align-items: center; gap: 4px;
+  min-width: 78px; padding: 10px 8px; border-radius: 14px; border: 1px solid var(--line);
+  background: var(--panel); color: var(--muted); font-size: 12px; }
+.scape b { font-size: 22px; font-weight: 400; color: hsl(var(--h) 70% 70%); }
+.scape[aria-current="true"] { color: var(--text); border-color: hsl(var(--h) 70% 60%);
+  background: linear-gradient(180deg, hsl(var(--h) 50% 30% / .45), var(--panel)); }
+
+main { max-width: 760px; margin: 0 auto; padding: 0 16px; }
+.hero h1 { margin: 6px 0 2px; font-size: 26px; font-weight: 650; }
+.hero p { margin: 0 0 14px; color: var(--muted); }
+
+.mixer { display: grid; grid-template-columns: repeat(10, 1fr); gap: 4px; padding: 14px 8px 10px;
+  background: var(--panel); border: 1px solid var(--line); border-radius: 18px; }
+.ch { display: flex; flex-direction: column; align-items: center; gap: 8px; min-width: 0; }
+.ch .val { font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.ch label { font-size: 11px; color: var(--muted); text-align: center; line-height: 1.15; height: 2.4em;
+  overflow: visible; width: 100%; word-break: normal; overflow-wrap: anywhere; hyphens: manual; letter-spacing: -.02em; }
+.ch.on label { color: var(--text); }
+
+/* vertical slider */
+.vs { -webkit-appearance: none; appearance: none; writing-mode: vertical-lr; direction: rtl;
+  width: 30px; height: 220px; background: transparent; margin: 0; touch-action: none; }
+.vs::-webkit-slider-runnable-track { width: 6px; border-radius: 3px;
+  background: linear-gradient(to top, var(--accent) var(--p, 50%), var(--line) var(--p, 50%)); }
+.vs::-webkit-slider-thumb { -webkit-appearance: none; width: 26px; height: 18px; border-radius: 6px;
+  background: var(--text); border: 0; margin-left: -10px; box-shadow: 0 2px 8px #0008; }
+.vs::-moz-range-track { width: 6px; border-radius: 3px; background: var(--line); }
+.vs::-moz-range-progress { width: 6px; border-radius: 3px; background: var(--accent); }
+.vs::-moz-range-thumb { width: 26px; height: 18px; border-radius: 6px; background: var(--text); border: 0; }
+
+.transport { display: flex; align-items: center; gap: 18px; margin: 18px 0 10px; }
+.play { width: 68px; height: 68px; border-radius: 50%; border: 0; font-size: 26px; flex: 0 0 auto;
+  background: var(--accent); color: #0b0f1a; box-shadow: 0 6px 24px var(--accent-soft); }
+.play.on { background: var(--text); }
+.vol { flex: 1; display: flex; flex-direction: column; gap: 4px; color: var(--muted); font-size: 12px; }
+.vol input { width: 100%; accent-color: var(--accent); }
+
+.tools { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.chip { border: 1px solid var(--line); background: var(--panel); border-radius: 999px; padding: 8px 14px; }
+.chip[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); }
+.chip.select { display: inline-flex; gap: 6px; align-items: center; }
+.chip select { background: transparent; border: 0; outline: 0; }
+.chip select option { background: var(--panel); }
+.timer-left { color: var(--muted); font-size: 13px; font-variant-numeric: tabular-nums; }
+
+.drawer { position: fixed; inset: 0; background: #0009; display: flex; justify-content: flex-end; z-index: 10; }
+.drawer[hidden] { display: none; }
+.drawer-inner { width: min(360px, 90vw); height: 100%; background: var(--panel); padding: calc(var(--safe-t) + 16px) 16px 16px;
+  overflow-y: auto; border-left: 1px solid var(--line); }
+.drawer h2 { margin: 0 0 12px; }
+.save { display: flex; gap: 8px; margin-bottom: 12px; }
+.save input { flex: 1; min-width: 0; background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; }
+.presets { list-style: none; padding: 0; margin: 0 0 16px; }
+.presets li { display: flex; align-items: center; gap: 8px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+.presets li button.load { flex: 1; text-align: left; background: none; border: 0; padding: 0; }
+.presets li small { color: var(--muted); display: block; }
+.presets li .del { background: none; border: 0; color: var(--muted); font-size: 18px; }
+.hint { color: var(--muted); font-size: 13px; }
+
+@media (max-width: 420px) {
+  .mixer { gap: 0; padding: 12px 2px 8px; }
+  .vs { height: 200px; width: 26px; }
+  .ch label { font-size: 9.5px; }
+}
+
+.scape-sep { flex: 0 0 auto; align-self: center; writing-mode: vertical-lr; transform: rotate(180deg);
+  font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); padding: 0 2px; }
+.loading { margin: -8px 0 10px; color: var(--accent); font-size: 13px; }
+.credits { margin: 0 0 16px; font-size: 13px; }
+.credits summary { cursor: pointer; color: var(--muted); }
+.credits ul { padding-left: 18px; }
+.credits li { margin: 4px 0; }
+.credits a { color: var(--accent); }
+</style>
+</head>
+<body>
+  <header class="top">
+    <div class="brand"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj4KICA8ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiMzYTViZDkiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiM3YjNmZDEiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz4KICA8cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjExMiIgZmlsbD0iIzBlMTMyMCIvPgogIDxjaXJjbGUgY3g9IjI1NiIgY3k9IjI1NiIgcj0iMTkwIiBmaWxsPSJ1cmwoI2cpIiBvcGFjaXR5PSIuOSIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2U2ZWJmNSIgc3Ryb2tlLXdpZHRoPSIyMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj4KICAgIDxwYXRoIGQ9Ik0xMjYgMjA2YzMyLTMwIDY0LTMwIDk2IDBzNjQgMzAgOTYgMCA2NC0zMCA2Ni0yIi8+CiAgICA8cGF0aCBkPSJNMTI2IDI2NmMzMi0zMCA2NC0zMCA5NiAwczY0IDMwIDk2IDAgNjQtMzAgNjYtMiIgb3BhY2l0eT0iLjgiLz4KICAgIDxwYXRoIGQ9Ik0xMjYgMzI2YzMyLTMwIDY0LTMwIDk2IDBzNjQgMzAgOTYgMCA2NC0zMCA2Ni0yIiBvcGFjaXR5PSIuNTUiLz4KICA8L2c+Cjwvc3ZnPgo=" alt="" width="28" height="28"><span>Driftwave</span></div>
+    <button id="menuBtn" class="icon-btn" aria-label="Presets">☰</button>
+  </header>
+
+  <nav id="scapes" class="scapes" aria-label="Soundscapes"></nav>
+
+  <main>
+    <section class="hero">
+      <h1 id="scapeName"></h1>
+      <p id="scapeDesc"></p>
+      <p id="loading" class="loading" hidden>Loading sounds…</p>
+    </section>
+
+    <section class="mixer" id="mixer" aria-label="Channel levels"></section>
+
+    <section class="transport">
+      <button id="playBtn" class="play" aria-label="Play">▶</button>
+      <label class="vol">
+        <span>Volume</span>
+        <input id="master" type="range" min="0" max="1" step="0.01" value="0.8">
+      </label>
+    </section>
+
+    <section class="tools">
+      <button id="animBtn" class="chip" aria-pressed="false">∿ Animate</button>
+      <button id="randBtn" class="chip">⚄ Shuffle</button>
+      <button id="resetBtn" class="chip">↺ Reset</button>
+      <label class="chip select">⏾
+        <select id="timer" aria-label="Sleep timer">
+          <option value="0">No timer</option>
+          <option value="15">15 min</option>
+          <option value="30">30 min</option>
+          <option value="45">45 min</option>
+          <option value="60">1 hour</option>
+          <option value="90">1.5 hours</option>
+          <option value="120">2 hours</option>
+          <option value="480">8 hours</option>
+        </select>
+      </label>
+      <span id="timerLeft" class="timer-left"></span>
+    </section>
+  </main>
+
+  <aside id="drawer" class="drawer" hidden>
+    <div class="drawer-inner">
+      <h2>Presets</h2>
+      <form id="saveForm" class="save">
+        <input id="presetName" placeholder="Name this mix" maxlength="40" required>
+        <button class="chip">Save</button>
+      </form>
+      <ul id="presetList" class="presets"></ul>
+      <p class="hint">Everything runs on this device and works offline. Synth soundscapes are generated live; recorded ones are bundled with the app.</p>
+      <details class="credits"><summary>Sound credits &amp; licenses</summary><ul id="creditList"></ul><p id="creditNote" class="hint"></p></details>
+      <button id="closeDrawer" class="chip">Close</button>
+    </div>
+  </aside>
+
+  <script type="module">
+// Generated by measuring each layer offline: equalises loudness across layers.
+const CALIB = {"spectrum:0":10.321,"spectrum:1":7.341,"spectrum:2":5.156,"spectrum:3":3.708,"spectrum:4":2.634,"spectrum:5":1.893,"spectrum:6":1.372,"spectrum:7":1.033,"spectrum:8":0.841,"spectrum:9":0.9,"rain:0":0.673,"rain:1":1.434,"rain:2":0.43,"rain:3":0.92,"rain:4":2.723,"rain:5":1.9,"rain:6":1.981,"rain:7":3.734,"rain:8":2.303,"rain:9":0.79,"ocean:0":0.643,"ocean:1":1.341,"ocean:2":1.335,"ocean:3":0.419,"ocean:4":1.45,"ocean:5":4.629,"ocean:6":2.021,"ocean:7":0.603,"ocean:8":6.391,"ocean:9":0.467,"fire:0":0.631,"fire:1":1.583,"fire:2":1.825,"fire:3":2.516,"fire:4":1.824,"fire:5":1.487,"fire:6":0.794,"fire:7":1.864,"fire:8":12,"fire:9":0.712,"forest:0":1.544,"forest:1":2.023,"forest:2":2.296,"forest:3":6.613,"forest:4":5.486,"forest:5":9.311,"forest:6":3.302,"forest:7":1.595,"forest:8":3.582,"forest:9":0.695,"stream:0":1.43,"stream:1":2.724,"stream:2":2.885,"stream:3":0.865,"stream:4":1.631,"stream:5":1.367,"stream:6":0.63,"stream:7":0.446,"stream:8":3.722,"stream:9":2.034,"cabin:0":0.732,"cabin:1":1.585,"cabin:2":1.433,"cabin:3":0.828,"cabin:4":0.35,"cabin:5":0.241,"cabin:6":0.925,"cabin:7":0.455,"cabin:8":0.731,"cabin:9":0.723,"drone:0":0.24,"drone:1":0.284,"drone:2":0.408,"drone:3":0.343,"drone:4":0.296,"drone:5":0.434,"drone:6":1.961,"drone:7":3.111,"drone:8":1.202,"drone:9":0.83};
+
+// Attribution for the recorded loops in www/sounds/ (all edited: trimmed, looped, loudness-matched, re-encoded).
+const CREDITS = [
+  { what: 'Songbirds (songbirds)', who: 'kvgarlic, edited by Porrumentzio', license: 'CC0', url: 'https://freesound.org/people/kvgarlic/sounds/156826/' },
+  { what: 'Harbour (boat)', who: 'Falcet, edited by Porrumentzio', license: 'CC0', url: 'https://freesound.org/people/Falcet/sounds/439365/' },
+  { what: 'City (city)', who: 'gezortenplotz, edited by Porrumentzio', license: 'CC BY', url: 'https://freesound.org/people/gezortenplotz/sounds/44796/' },
+  { what: 'Coffee shop (coffee-shop)', who: 'stephan', license: 'Public Domain', url: 'https://soundbible.com/1664-Restaurant-Ambiance.html' },
+  { what: 'Fireplace (fireplace)', who: 'ezwa', license: 'Public Domain', url: 'https://soundbible.com/1543-Fireplace.html' },
+  { what: 'Steady rain (rain-steady)', who: 'alex36917, edited by Porrumentzio', license: 'CC BY', url: 'https://freesound.org/people/alex36917/sounds/524605/' },
+  { what: 'Meadow at night (summer-night)', who: 'Lisa Redfern', license: 'Public Domain', url: 'https://soundbible.com/2083-Crickets-Chirping-At-Night.html' },
+  { what: 'Tempest (storm)', who: 'Digifish music, edited by Porrumentzio', license: 'CC BY', url: 'https://freesound.org/people/digifishmusic/sounds/41739/' },
+  { what: 'Creek (creek)', who: 'gluckose', license: 'CC0', url: 'https://freesound.org/people/gluckose/sounds/333987/' },
+  { what: 'Rails (train-tracks)', who: 'SDLx', license: 'CC BY 3.0', url: 'https://freesound.org/people/SDLx/sounds/259988/' },
+  { what: 'Shore waves (waves-shore)', who: 'Luftrum, edited by Porrumentzio', license: 'CC BY', url: 'https://freesound.org/people/Luftrum/sounds/48412/' },
+  { what: 'Gusts (wind-gusts)', who: 'felix.blume, edited by Porrumentzio', license: 'CC0', url: 'https://freesound.org/people/felix.blume/sounds/217506/' },
+];
+const CREDITS_NOTE = 'The loops above come via the Blanket project (github.com/rafaelmardojai/blanket). ' +
+  'All other recordings come via the Moodist project (github.com/remvze/moodist) and are licensed CC0 or under the ' +
+  'Pixabay Content License. Synthesized soundscapes are original.';
+
+// Soundscape definitions. Each has up to 10 channels (one slider each).
+// src: white | pink | brown | ev:<event texture>   or   osc: [freqs] (+ wave)
+// f:   [type, freq, Q]  or a list of them
+// mod: amplitude envelope { rate Hz, depth 0..1, p sharpness, gust: irregular }
+// fmod: filter sweep { rate, depth (fraction of cutoff) }
+// level: relative loudness at full slider (after automatic calibration)
+// def: default slider position 0..1
+
+const oct = [31, 63, 125, 250, 500, 1000, 2000, 4000, 8000, 16000];
+
+const SCAPES = [
+  {
+    id: 'spectrum', trim: 1.4, name: 'Spectrum', icon: '≋', hue: 220,
+    desc: 'Ten octave bands of noise. Sculpt your own colour, from deep rumble to airy hiss.',
+    channels: oct.map((f, i) => ({
+      name: f >= 1000 ? `${f / 1000}k` : `${f}`, src: 'white', f: ['bandpass', f, 1.4],
+      def: [0.7, 0.75, 0.75, 0.7, 0.6, 0.5, 0.42, 0.35, 0.28, 0.2][i],
+    })),
+  },
+  {
+    id: 'rain', trim: 2.6, name: 'Rainfall', icon: '☂', hue: 205,
+    desc: 'Steady rain from a distant drizzle to a downpour on the roof.',
+    channels: [
+      { name: 'Rumble', src: 'brown', f: ['lowpass', 180, 0.7], level: 0.9, def: 0.5 },
+      { name: 'Rain body', src: 'pink', f: ['bandpass', 900, 0.6], level: 1, def: 0.7 },
+      { name: 'Hiss', src: 'white', f: ['highpass', 5000, 0.5], level: 0.6, def: 0.45 },
+      { name: 'Downpour', src: 'pink', f: [['highpass', 400, 0.5], ['lowpass', 7000, 0.5]], mod: { rate: 0.03, depth: 0.5, gust: 1 }, level: 1, def: 0.4 },
+      { name: 'Patter', src: 'ev:patter', f: ['highpass', 1500, 0.7], level: 0.9, def: 0.6 },
+      { name: 'Near drops', src: 'ev:drops', pan: -0.3, level: 0.8, def: 0.4 },
+      { name: 'Far drops', src: 'ev:drops', rate: 0.7, f: ['lowpass', 1500, 0.7], pan: 0.35, level: 0.6, def: 0.35 },
+      { name: 'Gutter', src: 'ev:bubbles', f: ['bandpass', 700, 0.8], pan: 0.5, level: 0.6, def: 0.2 },
+      { name: 'Wind', src: 'pink', f: ['bandpass', 500, 2], fmod: { rate: 0.05, depth: 0.5 }, mod: { rate: 0.04, depth: 0.8, gust: 1, p: 1.5 }, level: 0.7, def: 0.2 },
+      { name: 'Thunder', src: 'brown', f: ['lowpass', 90, 1], mod: { rate: 0.02, depth: 1, gust: 1, p: 5 }, level: 1.4, def: 0.25 },
+    ],
+  },
+  {
+    id: 'ocean', trim: 3, name: 'Shoreline', icon: '〰', hue: 190,
+    desc: 'Waves rolling onto a sandy beach, with sea breeze and foam.',
+    channels: [
+      { name: 'Deep swell', src: 'brown', f: ['lowpass', 250, 0.7], mod: { rate: 0.09, depth: 0.85, p: 2 }, level: 1.1, def: 0.6 },
+      { name: 'Break L', src: 'pink', f: ['bandpass', 700, 0.5], pan: -0.6, mod: { rate: 0.1, depth: 0.95, p: 3 }, level: 1, def: 0.6 },
+      { name: 'Break R', src: 'pink', f: ['bandpass', 800, 0.5], pan: 0.6, mod: { rate: 0.085, depth: 0.95, p: 3 }, level: 1, def: 0.55 },
+      { name: 'Foam', src: 'white', f: ['highpass', 3000, 0.5], mod: { rate: 0.095, depth: 0.95, p: 4 }, level: 0.6, def: 0.45 },
+      { name: 'Wash', src: 'pink', f: ['bandpass', 2000, 0.6], mod: { rate: 0.07, depth: 0.9, p: 2.5, gust: 1 }, level: 0.8, def: 0.4 },
+      { name: 'Pebbles', src: 'ev:patter', f: ['bandpass', 3000, 0.6], mod: { rate: 0.09, depth: 1, p: 4 }, level: 0.8, def: 0.25 },
+      { name: 'Breeze', src: 'pink', f: ['bandpass', 400, 1.5], fmod: { rate: 0.04, depth: 0.4 }, mod: { rate: 0.03, depth: 0.7, gust: 1 }, level: 0.7, def: 0.3 },
+      { name: 'Distant sea', src: 'brown', f: ['lowpass', 500, 0.7], level: 0.6, def: 0.4 },
+      { name: 'Gulls', src: 'ev:birds', rate: 0.45, f: ['bandpass', 1600, 1], level: 0.5, def: 0.08 },
+      { name: 'Air', src: 'white', f: ['highpass', 9000, 0.5], level: 0.4, def: 0.15 },
+    ],
+  },
+  {
+    id: 'fire', trim: 4, name: 'Hearth', icon: '♨', hue: 22,
+    desc: 'A crackling log fire. Turn up the embers for a slow, cosy burn.',
+    channels: [
+      { name: 'Roar', src: 'brown', f: ['lowpass', 300, 0.8], mod: { rate: 0.15, depth: 0.4, gust: 1 }, level: 1, def: 0.5 },
+      { name: 'Flame', src: 'pink', f: ['bandpass', 600, 0.8], mod: { rate: 0.4, depth: 0.5, gust: 1 }, level: 0.8, def: 0.45 },
+      { name: 'Crackle L', src: 'ev:crackle', pan: -0.4, level: 0.9, def: 0.6 },
+      { name: 'Crackle R', src: 'ev:crackle', rate: 0.85, pan: 0.4, level: 0.9, def: 0.5 },
+      { name: 'Snaps', src: 'ev:crackle', rate: 1.3, f: ['highpass', 2500, 0.7], level: 0.9, def: 0.35 },
+      { name: 'Embers', src: 'ev:embers', f: ['highpass', 3000, 0.5], level: 0.7, def: 0.4 },
+      { name: 'Sizzle', src: 'white', f: ['bandpass', 6000, 1], mod: { rate: 0.2, depth: 0.8, gust: 1, p: 2 }, level: 0.4, def: 0.2 },
+      { name: 'Draft', src: 'pink', f: ['bandpass', 250, 1.2], fmod: { rate: 0.06, depth: 0.4 }, mod: { rate: 0.05, depth: 0.7, gust: 1 }, level: 0.7, def: 0.25 },
+      { name: 'Clock', src: 'ev:clock', f: ['bandpass', 2500, 1.5], level: 1.5, def: 0 },
+      { name: 'Room', src: 'brown', f: ['lowpass', 120, 0.7], level: 0.6, def: 0.3 },
+    ],
+  },
+  {
+    id: 'forest', trim: 5, name: 'Woodland', icon: '♣', hue: 120,
+    desc: 'Wind through trees, birdsong at dawn and insects at dusk.',
+    channels: [
+      { name: 'Leaves', src: 'pink', f: ['bandpass', 2500, 0.7], mod: { rate: 0.06, depth: 0.7, gust: 1, p: 1.5 }, level: 0.8, def: 0.5 },
+      { name: 'Wind low', src: 'pink', f: ['bandpass', 300, 1.5], fmod: { rate: 0.04, depth: 0.5 }, mod: { rate: 0.03, depth: 0.8, gust: 1 }, level: 0.9, def: 0.45 },
+      { name: 'Wind high', src: 'white', f: ['bandpass', 1200, 3], fmod: { rate: 0.05, depth: 0.6 }, mod: { rate: 0.04, depth: 0.9, gust: 1, p: 2 }, level: 0.5, def: 0.25 },
+      { name: 'Birds near', src: 'ev:birds', pan: -0.4, level: 0.8, def: 0.4 },
+      { name: 'Birds far', src: 'ev:birds', rate: 0.85, f: ['lowpass', 3500, 0.7], pan: 0.5, level: 0.6, def: 0.35 },
+      { name: 'Crickets', src: 'ev:crickets', pan: 0.2, level: 0.5, def: 0.15 },
+      { name: 'Stream', src: 'ev:bubbles', f: ['bandpass', 900, 0.7], pan: -0.5, level: 0.6, def: 0.2 },
+      { name: 'Water', src: 'pink', f: ['bandpass', 1500, 0.8], pan: -0.5, mod: { rate: 0.3, depth: 0.3, gust: 1 }, level: 0.6, def: 0.2 },
+      { name: 'Twigs', src: 'ev:crackle', rate: 0.5, f: ['bandpass', 1500, 1], level: 0.3, def: 0.05 },
+      { name: 'Ground', src: 'brown', f: ['lowpass', 150, 0.7], level: 0.6, def: 0.3 },
+    ],
+  },
+  {
+    id: 'stream', trim: 2.8, name: 'Brook', icon: '≈', hue: 175,
+    desc: 'A shallow mountain stream tumbling over stones.',
+    channels: [
+      { name: 'Flow', src: 'pink', f: ['bandpass', 800, 0.6], level: 1, def: 0.6 },
+      { name: 'Babble L', src: 'ev:bubbles', pan: -0.5, level: 0.9, def: 0.55 },
+      { name: 'Babble R', src: 'ev:bubbles', rate: 1.2, pan: 0.5, level: 0.9, def: 0.5 },
+      { name: 'Splash', src: 'white', f: ['bandpass', 3500, 0.8], mod: { rate: 0.5, depth: 0.6, gust: 1, p: 2 }, level: 0.6, def: 0.4 },
+      { name: 'Trickle', src: 'ev:drops', rate: 1.3, level: 0.6, def: 0.3 },
+      { name: 'Cascade', src: 'pink', f: ['bandpass', 2000, 0.5], level: 0.8, def: 0.3 },
+      { name: 'Depth', src: 'brown', f: ['lowpass', 300, 0.7], level: 0.8, def: 0.35 },
+      { name: 'Air', src: 'white', f: ['highpass', 7000, 0.5], level: 0.4, def: 0.15 },
+      { name: 'Birds', src: 'ev:birds', rate: 0.95, f: ['highpass', 1500, 0.7], pan: 0.3, level: 0.5, def: 0.15 },
+      { name: 'Breeze', src: 'pink', f: ['bandpass', 400, 1.5], fmod: { rate: 0.04, depth: 0.4 }, mod: { rate: 0.03, depth: 0.7, gust: 1 }, level: 0.6, def: 0.15 },
+    ],
+  },
+  {
+    id: 'cabin', trim: 2.7, name: 'Night Flight', icon: '✈', hue: 260,
+    desc: 'The steady hum of a long-haul cabin. Great for masking noise and sleeping.',
+    channels: [
+      { name: 'Engine low', src: 'brown', f: ['lowpass', 120, 0.8], level: 1.1, def: 0.65 },
+      { name: 'Engine mid', src: 'pink', f: ['bandpass', 350, 0.8], level: 1, def: 0.55 },
+      { name: 'Airflow', src: 'pink', f: ['bandpass', 1200, 0.6], level: 0.9, def: 0.45 },
+      { name: 'Vent', src: 'white', f: ['bandpass', 4000, 0.8], level: 0.5, def: 0.25 },
+      { name: 'Hum', osc: [98, 196, 294], wave: 'triangle', f: ['lowpass', 600, 0.7], level: 0.35, def: 0.15 },
+      { name: 'Turbine', osc: [1180, 1187], f: ['bandpass', 1180, 6], level: 0.15, def: 0.05 },
+      { name: 'Wobble', src: 'brown', f: ['lowpass', 60, 1], mod: { rate: 0.12, depth: 0.7, gust: 1 }, level: 0.9, def: 0.3 },
+      { name: 'Hiss', src: 'white', f: ['highpass', 8000, 0.5], level: 0.35, def: 0.15 },
+      { name: 'Width L', src: 'pink', f: ['lowpass', 800, 0.7], pan: -0.9, level: 0.6, def: 0.3 },
+      { name: 'Width R', src: 'pink', f: ['lowpass', 800, 0.7], pan: 0.9, level: 0.6, def: 0.3 },
+    ],
+  },
+  {
+    id: 'drone', trim: 4.5, name: 'Deep Space', icon: '✦', hue: 285,
+    desc: 'Slowly breathing harmonic drones and distant chimes for focus or meditation.',
+    channels: [
+      { name: 'Root', osc: [55, 55.3], wave: 'sine', mod: { rate: 0.05, depth: 0.3 }, level: 0.8, def: 0.6 },
+      { name: 'Fifth', osc: [82.4, 82.7], wave: 'triangle', f: ['lowpass', 400, 0.7], mod: { rate: 0.035, depth: 0.6 }, level: 0.6, def: 0.45 },
+      { name: 'Octave', osc: [110, 110.4], wave: 'triangle', f: ['lowpass', 500, 0.7], mod: { rate: 0.045, depth: 0.7 }, pan: -0.3, level: 0.5, def: 0.4 },
+      { name: 'Ninth', osc: [246.9, 247.4], wave: 'sine', mod: { rate: 0.03, depth: 0.85, p: 1.5 }, pan: 0.4, level: 0.3, def: 0.3 },
+      { name: 'Shimmer', osc: [659.3, 660, 987.8], wave: 'sine', mod: { rate: 0.025, depth: 0.95, p: 2 }, level: 0.15, def: 0.15 },
+      { name: 'Pad', osc: [164.8, 196, 246.9], wave: 'sawtooth', f: ['lowpass', 500, 1], fmod: { rate: 0.02, depth: 0.6 }, level: 0.3, def: 0.3 },
+      { name: 'Chimes', src: 'ev:chimes', level: 0.6, def: 0.25 },
+      { name: 'Nebula', src: 'pink', f: ['bandpass', 600, 4], fmod: { rate: 0.02, depth: 0.7 }, mod: { rate: 0.02, depth: 0.8, gust: 1 }, level: 0.6, def: 0.3 },
+      { name: 'Solar wind', src: 'white', f: ['bandpass', 3000, 2], fmod: { rate: 0.03, depth: 0.6 }, mod: { rate: 0.03, depth: 0.9, gust: 1, p: 2 }, level: 0.3, def: 0.15 },
+      { name: 'Void', src: 'brown', f: ['lowpass', 80, 0.7], level: 0.8, def: 0.35 },
+    ],
+  },
+
+  // ---------- Recorded soundscapes (real field recordings, see Credits) ----------
+  {
+    id: 'forest-dawn', recorded: true, trim: 2.6, name: 'Forest Dawn', icon: '🐦', hue: 100,
+    desc: 'Birds chirping as the sun comes up, a woodpecker, a creek and wind in the canopy.',
+    channels: [
+      { name: 'Songbirds', src: 'rec:songbirds', def: 0.7 },
+      { name: 'Morning chorus', src: 'rec:birds-morning', pan: 0.2, def: 0.55 },
+      { name: 'Woodpecker', src: 'rec:woodpecker', pan: -0.5, def: 0.3 },
+      { name: 'Crows', src: 'rec:crows', f: ['lowpass', 3000, 0.7], pan: 0.5, level: 0.7, def: 0.15 },
+      { name: 'Jungle', src: 'rec:jungle', level: 0.8, def: 0 },
+      { name: 'Canopy wind', src: 'rec:wind-in-trees', def: 0.45 },
+      { name: 'Creek', src: 'rec:creek', pan: -0.3, def: 0.4 },
+      { name: 'Rain on leaves', src: 'rec:rain-leaves', def: 0 },
+      { name: 'Waterfall', src: 'rec:waterfall', level: 0.8, def: 0 },
+      { name: 'Earth', src: 'brown', f: ['lowpass', 150, 0.7], level: 0.6 * 0.7, def: 0.25 },
+    ],
+  },
+  {
+    id: 'summer-night', recorded: true, trim: 4.5, name: 'Summer Night', icon: '🌙', hue: 250,
+    desc: 'Crickets, frogs and a distant owl on a warm night, with a crackling campfire.',
+    channels: [
+      { name: 'Crickets', src: 'rec:crickets', def: 0.6 },
+      { name: 'Meadow', src: 'rec:summer-night', pan: -0.2, def: 0.5 },
+      { name: 'Frogs', src: 'rec:frog', pan: 0.4, def: 0.35 },
+      { name: 'Owl', src: 'rec:owl', f: ['lowpass', 2500, 0.7], pan: -0.6, level: 0.7, def: 0.15 },
+      { name: 'Far wolves', src: 'rec:wolf', f: ['lowpass', 1800, 0.7], pan: 0.6, level: 0.5, def: 0 },
+      { name: 'Village', src: 'rec:night-village', level: 0.7, def: 0.15 },
+      { name: 'Campfire', src: 'rec:campfire', def: 0.3 },
+      { name: 'Creek', src: 'rec:river', level: 0.8, def: 0.15 },
+      { name: 'Breeze', src: 'rec:wind-open', level: 0.7, def: 0.15 },
+      { name: 'Night air', src: 'pink', f: ['bandpass', 400, 1.2], level: 0.5 * 2, def: 0.15 },
+    ],
+  },
+  {
+    id: 'storm', recorded: true, trim: 5, name: 'Thunderstorm', icon: '⛈', hue: 215,
+    desc: 'Real rain on windows, tents and leaves, with rolling thunder. Build anything from drizzle to tempest.',
+    channels: [
+      { name: 'Steady rain', src: 'rec:rain-steady', def: 0.6 },
+      { name: 'Light rain', src: 'rec:light-rain', def: 0.4 },
+      { name: 'Heavy rain', src: 'rec:heavy-rain', def: 0.25 },
+      { name: 'On window', src: 'rec:rain-window', pan: -0.3, def: 0.4 },
+      { name: 'On tent', src: 'rec:rain-tent', def: 0 },
+      { name: 'Drips', src: 'rec:droplets', def: 0.15 },
+      { name: 'On leaves', src: 'rec:rain-leaves', pan: 0.3, def: 0.2 },
+      { name: 'Thunder', src: 'rec:thunder', def: 0.45 },
+      { name: 'Tempest', src: 'rec:storm', level: 0.8, def: 0.15 },
+      { name: 'Gusts', src: 'rec:wind-gusts', level: 0.7, def: 0.15 },
+    ],
+  },
+  {
+    id: 'sea', recorded: true, trim: 4.8, name: 'Sea Voyage', icon: '⛵', hue: 195,
+    desc: 'Waves on the shore, gulls overhead, a creaking sailboat and whale song from the deep.',
+    channels: [
+      { name: 'Shore waves', src: 'rec:waves-shore', def: 0.6 },
+      { name: 'Soft waves', src: 'rec:waves-soft', def: 0.4 },
+      { name: 'Seagulls', src: 'rec:seagulls', pan: 0.4, level: 0.7, def: 0.2 },
+      { name: 'Sailboat', src: 'rec:sailboat', def: 0.25 },
+      { name: 'Rowing', src: 'rec:rowing-boat', level: 0.8, def: 0 },
+      { name: 'Harbour', src: 'rec:boat', level: 0.8, def: 0 },
+      { name: 'Whales', src: 'rec:whale', level: 0.7, def: 0 },
+      { name: 'Underwater', src: 'rec:underwater', def: 0 },
+      { name: 'Sea wind', src: 'rec:howling-wind', level: 0.6, def: 0.15 },
+      { name: 'Swell', src: 'brown', f: ['lowpass', 250, 0.7], mod: { rate: 0.09, depth: 0.85, p: 2 }, level: 1.1 * 0.64, def: 0.25 },
+    ],
+  },
+  {
+    id: 'cafe', recorded: true, trim: 3.6, name: 'Café Corner', icon: '☕', hue: 30,
+    desc: 'A busy coffee shop on a rainy afternoon. Typing, pages turning and a record spinning.',
+    channels: [
+      { name: 'Café chatter', src: 'rec:cafe', def: 0.55 },
+      { name: 'Coffee shop', src: 'rec:coffee-shop', def: 0.35 },
+      { name: 'Restaurant', src: 'rec:restaurant', level: 0.8, def: 0 },
+      { name: 'Library hush', src: 'rec:library', def: 0 },
+      { name: 'Laptop typing', src: 'rec:keyboard', pan: -0.4, level: 0.7, def: 0.25 },
+      { name: 'Typewriter', src: 'rec:typewriter', pan: 0.4, level: 0.7, def: 0 },
+      { name: 'Pages', src: 'rec:paper', pan: 0.3, level: 0.7, def: 0.15 },
+      { name: 'Rain outside', src: 'rec:rain-window', f: ['lowpass', 4000, 0.7], def: 0.35 },
+      { name: 'Wall clock', src: 'rec:clock', level: 0.6, def: 0 },
+      { name: 'Vinyl', src: 'rec:vinyl', level: 0.7, def: 0.2 },
+    ],
+  },
+  {
+    id: 'farm', recorded: true, trim: 5, name: 'Countryside', icon: '🐄', hue: 75,
+    desc: 'A sleepy farm: hens, cows, sheep, bees in the orchard and a stream nearby.',
+    channels: [
+      { name: 'Hens', src: 'rec:chickens', pan: -0.3, level: 0.7, def: 0.45 },
+      { name: 'Cows', src: 'rec:cows', pan: 0.5, level: 0.7, def: 0.35 },
+      { name: 'Sheep', src: 'rec:sheep', pan: -0.5, level: 0.7, def: 0.3 },
+      { name: 'Horse', src: 'rec:horse', level: 0.6, def: 0 },
+      { name: 'Bees', src: 'rec:beehive', pan: 0.3, level: 0.7, def: 0.3 },
+      { name: 'Far dog', src: 'rec:dog', f: ['lowpass', 2000, 0.7], pan: 0.7, level: 0.4, def: 0 },
+      { name: 'Birds', src: 'rec:songbirds', level: 0.8, def: 0.5 },
+      { name: 'Crickets', src: 'rec:crickets', level: 0.7, def: 0.1 },
+      { name: 'Stream', src: 'rec:river', level: 0.8, def: 0.45 },
+      { name: 'Breeze', src: 'rec:wind-in-trees', level: 0.8, def: 0.4 },
+    ],
+  },
+  {
+    id: 'home', recorded: true, trim: 5.5, name: 'Cozy Home', icon: '🏠', hue: 15,
+    desc: 'Fireplace, a purring cat, the washing machine humming and chimes on the porch.',
+    channels: [
+      { name: 'Fireplace', src: 'rec:fireplace', def: 0.55 },
+      { name: 'Cat purring', src: 'rec:cat-purring', level: 0.8, def: 0.35 },
+      { name: 'Kettle', src: 'rec:boiling-water', level: 0.6, def: 0 },
+      { name: 'Washer', src: 'rec:washing-machine', level: 0.8, def: 0 },
+      { name: 'Dryer', src: 'rec:dryer', level: 0.8, def: 0.2 },
+      { name: 'Ceiling fan', src: 'rec:ceiling-fan', def: 0.25 },
+      { name: 'Clock', src: 'rec:clock', level: 0.6, def: 0.15 },
+      { name: 'Wind chimes', src: 'rec:wind-chimes', level: 0.6, def: 0.15 },
+      { name: 'Singing bowl', src: 'rec:singing-bowl', level: 0.6, def: 0 },
+      { name: 'Rain outside', src: 'rec:rain-window', f: ['lowpass', 3000, 0.7], def: 0.3 },
+    ],
+  },
+  {
+    id: 'travel', recorded: true, trim: 3.3, name: 'On the Move', icon: '🚆', hue: 330,
+    desc: 'Night train, a car in the rain, highways and city bustle. Lulling motion sounds.',
+    channels: [
+      { name: 'Train cabin', src: 'rec:train-inside', def: 0.55 },
+      { name: 'Rails', src: 'rec:train-tracks', level: 0.7, def: 0.2 },
+      { name: 'Airplane', src: 'rec:airplane', def: 0 },
+      { name: 'Subway', src: 'rec:subway', level: 0.8, def: 0 },
+      { name: 'Rain on car', src: 'rec:rain-car', def: 0 },
+      { name: 'Wipers', src: 'rec:wipers', level: 0.6, def: 0 },
+      { name: 'Highway', src: 'rec:highway', level: 0.8, def: 0.15 },
+      { name: 'Road', src: 'rec:road', level: 0.8, def: 0 },
+      { name: 'City', src: 'rec:city', level: 0.7, def: 0 },
+      { name: 'Submarine', src: 'rec:submarine', level: 0.8, def: 0 },
+    ],
+  },
+];
+
+// Driftwave audio engine — everything is synthesized locally with the Web Audio API.
+// No audio files, no network. Modulation (waves, gusts, swells) runs inside the audio
+// graph so it keeps working when JS timers are throttled (screen off / background).
+
+const LOOP_SECONDS = 12;
+const EVENT_SECONDS = 24;
+
+function rand(a, b) { return a + Math.random() * (b - a); }
+
+// Build a seamless stereo loop: generate N+F samples, crossfade the tail into the head.
+function makeLoop(ctx, seconds, fill) {
+  const sr = ctx.sampleRate;
+  const N = Math.floor(seconds * sr);
+  const F = Math.floor(0.5 * sr);
+  const buf = ctx.createBuffer(2, N, sr);
+  for (let ch = 0; ch < 2; ch++) {
+    const raw = new Float32Array(N + F);
+    fill(raw, sr, ch);
+    const out = buf.getChannelData(ch);
+    for (let i = 0; i < N; i++) out[i] = raw[i];
+    for (let i = 0; i < F; i++) {
+      const t = i / F;
+      out[i] = raw[i] * Math.sqrt(t) + raw[N + i] * Math.sqrt(1 - t);
+    }
+  }
+  return buf;
+}
+
+const noiseFills = {
+  white(d) { for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * 0.5; },
+  pink(d) {
+    let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
+    for (let i = 0; i < d.length; i++) {
+      const w = Math.random() * 2 - 1;
+      b0 = 0.99886 * b0 + w * 0.0555179; b1 = 0.99332 * b1 + w * 0.0750759;
+      b2 = 0.96900 * b2 + w * 0.1538520; b3 = 0.86650 * b3 + w * 0.3104856;
+      b4 = 0.55000 * b4 + w * 0.5329522; b5 = -0.7616 * b5 - w * 0.0168980;
+      d[i] = (b0 + b1 + b2 + b3 + b4 + b5 + b6 + w * 0.5362) * 0.11;
+      b6 = w * 0.115926;
+    }
+  },
+  brown(d) {
+    let last = 0, dc = 0;
+    for (let i = 0; i < d.length; i++) {
+      last = (last + 0.02 * (Math.random() * 2 - 1)) / 1.02;
+      d[i] = last * 3.5;
+    }
+    for (let i = 0; i < d.length; i++) dc += d[i];
+    dc /= d.length;
+    for (let i = 0; i < d.length; i++) d[i] -= dc;
+  },
+};
+
+// ---- Event textures (drops, crackles, chimes, birds...) rendered once into loops ----
+function scatter(d, sr, perSecond, render) {
+  const n = Math.floor((d.length / sr) * perSecond);
+  for (let k = 0; k < n; k++) render(d, sr, Math.floor(Math.random() * d.length));
+}
+function add(d, i, v) { if (i >= 0 && i < d.length) d[i] += v; }
+
+const eventFills = {
+  drops(d, sr) { // water droplets: short rising sine "plinks"
+    scatter(d, sr, 14, (d, sr, at) => {
+      const f0 = rand(600, 2600), amp = Math.pow(Math.random(), 2) * 0.6;
+      const len = Math.floor(sr * 0.06); let ph = 0;
+      for (let i = 0; i < len; i++) {
+        const t = i / sr;
+        ph += 2 * Math.PI * f0 * (1 + 0.8 * Math.min(t / 0.02, 1)) / sr;
+        add(d, at + i, Math.sin(ph) * amp * Math.exp(-t / 0.012));
+      }
+    });
+  },
+  patter(d, sr) { // dense tiny ticks: rain on surfaces
+    scatter(d, sr, 260, (d, sr, at) => {
+      const amp = Math.pow(Math.random(), 3) * 0.5, len = Math.floor(sr * 0.004);
+      for (let i = 0; i < len; i++) add(d, at + i, (Math.random() * 2 - 1) * amp * Math.exp(-i / (sr * 0.0008)));
+    });
+  },
+  crackle(d, sr) { // fire crackles and occasional pops
+    scatter(d, sr, 22, (d, sr, at) => {
+      const big = Math.random() < 0.12;
+      const amp = (big ? 0.9 : 0.35) * Math.pow(Math.random(), 1.5);
+      const len = Math.floor(sr * (big ? 0.03 : 0.008)), tau = sr * (big ? 0.006 : 0.0015);
+      for (let i = 0; i < len; i++) add(d, at + i, (Math.random() * 2 - 1) * amp * Math.exp(-i / tau));
+      if (Math.random() < 0.3) { // tiny burst cluster
+        for (let j = 0; j < 4; j++) {
+          const o = at + Math.floor(rand(0.005, 0.06) * sr), a = amp * rand(0.1, 0.4);
+          for (let i = 0; i < sr * 0.003; i++) add(d, o + i, (Math.random() * 2 - 1) * a * Math.exp(-i / (sr * 0.0007)));
+        }
+      }
+    });
+  },
+  embers(d, sr) { // soft hiss pulses
+    scatter(d, sr, 3, (d, sr, at) => {
+      const len = Math.floor(sr * rand(0.3, 1.2)), amp = rand(0.05, 0.2);
+      for (let i = 0; i < len; i++) add(d, at + i, (Math.random() * 2 - 1) * amp * Math.sin(Math.PI * i / len));
+    });
+  },
+  chimes(d, sr) { // pentatonic glass chimes
+    const scale = [0, 2, 4, 7, 9, 12, 14, 16, 19, 21];
+    scatter(d, sr, 0.7, (d, sr, at) => {
+      const f = 523.25 * Math.pow(2, scale[Math.floor(Math.random() * scale.length)] / 12);
+      const amp = rand(0.08, 0.22), len = Math.floor(sr * 4);
+      const parts = [[1, 1], [2.76, 0.4], [5.4, 0.2], [8.93, 0.1]];
+      for (let i = 0; i < len; i++) {
+        const t = i / sr; let s = 0;
+        for (const [m, a] of parts) s += Math.sin(2 * Math.PI * f * m * t) * a * Math.exp(-t * (0.9 + m * 0.5));
+        add(d, at + i, s * amp * Math.min(1, t * 400));
+      }
+    });
+  },
+  birds(d, sr) { // phrases of synthetic chirps
+    scatter(d, sr, 0.45, (d, sr, at) => {
+      const base = rand(2200, 4800), n = 2 + Math.floor(Math.random() * 6), amp = rand(0.05, 0.18);
+      const dir = Math.random() < 0.5 ? 1 : -1, gap = rand(0.07, 0.16), clen = rand(0.04, 0.09);
+      let off = at;
+      for (let c = 0; c < n; c++) {
+        const len = Math.floor(sr * clen); let ph = 0;
+        for (let i = 0; i < len; i++) {
+          const x = i / len;
+          const f = base * (1 + dir * 0.35 * x) + 300 * Math.sin(2 * Math.PI * 30 * i / sr);
+          ph += 2 * Math.PI * f / sr;
+          add(d, off + i, Math.sin(ph) * amp * Math.sin(Math.PI * x));
+        }
+        off += Math.floor(sr * gap);
+      }
+    });
+  },
+  crickets(d, sr) { // pulsed narrow tone
+    let t0 = 0;
+    while (t0 < d.length) {
+      const f = rand(4300, 4600), pulses = 3 + Math.floor(Math.random() * 3), amp = rand(0.04, 0.1);
+      for (let p = 0; p < pulses; p++) {
+        const at = t0 + Math.floor(p * 0.025 * sr), len = Math.floor(0.015 * sr);
+        for (let i = 0; i < len; i++) add(d, at + i, Math.sin(2 * Math.PI * f * i / sr) * amp * Math.sin(Math.PI * i / len));
+      }
+      t0 += Math.floor(rand(0.35, 0.8) * sr);
+    }
+  },
+  bubbles(d, sr) { // stream bubbles: falling-pitch blips
+    scatter(d, sr, 30, (d, sr, at) => {
+      const f0 = rand(300, 1400), amp = Math.pow(Math.random(), 2) * 0.35, len = Math.floor(sr * 0.04); let ph = 0;
+      for (let i = 0; i < len; i++) {
+        const t = i / sr; ph += 2 * Math.PI * f0 * (1 + 2.5 * t / 0.04) / sr;
+        add(d, at + i, Math.sin(ph) * amp * Math.exp(-t / 0.01));
+      }
+    });
+  },
+  clock(d, sr) { // soft ticking, one tick per second
+    for (let s = 0; s < d.length; s += sr) {
+      const amp = (s / sr) % 2 ? 0.25 : 0.2;
+      for (let i = 0; i < sr * 0.01; i++) add(d, s + i, (Math.random() * 2 - 1) * amp * Math.exp(-i / (sr * 0.0012)));
+    }
+  },
+};
+
+// Shaper curve mapping an LFO in [-1,1] to an envelope in [0,1] with sharpness p.
+function shaperCurve(p) {
+  const n = 1024, c = new Float32Array(n);
+  for (let i = 0; i < n; i++) { const x = i / (n - 1); c[i] = Math.pow(x, p); }
+  return c;
+}
+
+class Engine {
+  constructor() {
+    this.ctx = null;
+    this.buffers = {};
+    this.recs = new Map();
+    this.channels = [];
+    this.playing = false;
+    this.masterLevel = 0.8;
+  }
+
+  init() {
+    if (this.ctx) return;
+    const ctx = new (window.AudioContext || window.webkitAudioContext)({ latencyHint: 'playback' });
+    this.ctx = ctx;
+    this.limiter = ctx.createDynamicsCompressor();
+    this.limiter.threshold.value = -6; this.limiter.knee.value = 6;
+    this.limiter.ratio.value = 12; this.limiter.attack.value = 0.005; this.limiter.release.value = 0.25;
+    this.fade = ctx.createGain(); this.fade.gain.value = 0;        // play/pause + sleep timer fades
+    this.master = ctx.createGain(); this.master.gain.value = this.masterLevel;
+    this.master.connect(this.limiter).connect(this.fade).connect(ctx.destination);
+  }
+
+  buffer(src) {
+    if (!this.buffers[src]) {
+      if (noiseFills[src]) this.buffers[src] = makeLoop(this.ctx, LOOP_SECONDS, noiseFills[src]);
+      else {
+        const fill = eventFills[src.replace('ev:', '')];
+        this.buffers[src] = makeLoop(this.ctx, EVENT_SECONDS, fill);
+      }
+    }
+    return this.buffers[src];
+  }
+
+  lfo(rate, spread) { // returns a node producing a smooth signal in [-1,1]
+    const ctx = this.ctx, sum = ctx.createGain();
+    const parts = spread ? 3 : 1;
+    sum.gain.value = 1 / parts;
+    for (let i = 0; i < parts; i++) {
+      const o = ctx.createOscillator();
+      o.frequency.value = rate * (spread ? [1, 1.618, 2.414][i] * rand(0.85, 1.15) : rand(0.9, 1.1));
+      o.connect(sum); o.start(ctx.currentTime + rand(0, 1)); this.nodes.push(o);
+    }
+    return sum;
+  }
+
+  build(scape, values) {
+    this.teardown();
+    const ctx = this.ctx;
+    this.nodes = [];
+    this.channels = scape.channels.map((c, i) => {
+      const out = ctx.createGain();           // slider level
+      out.gain.value = 0;
+      const modGain = ctx.createGain();       // modulation envelope
+      let src;
+      if (c.osc) {
+        src = ctx.createGain(); src.gain.value = 1 / c.osc.length;
+        for (const f of c.osc) {
+          const o = ctx.createOscillator(); o.type = c.wave || 'sine';
+          o.frequency.value = f; o.detune.value = rand(-6, 6);
+          o.connect(src); o.start(); this.nodes.push(o);
+        }
+      } else if (c.src.startsWith('rec:')) {
+        src = ctx.createGain();               // recording is attached here once loaded (lazily)
+      } else {
+        src = ctx.createBufferSource(); src.buffer = this.buffer(c.src); src.loop = true;
+        src.playbackRate.value = c.rate || 1;
+        src.start(0, rand(0, src.buffer.duration)); this.nodes.push(src);
+      }
+      let node = src, fmodDone = false;
+      for (const f of (c.f ? (Array.isArray(c.f[0]) ? c.f : [c.f]) : [])) {
+        const bq = ctx.createBiquadFilter(); bq.type = f[0]; bq.frequency.value = f[1];
+        if (f[2] != null) bq.Q.value = f[2];
+        if (c.fmod && !fmodDone) {
+          const l = this.lfo(c.fmod.rate, true), g = ctx.createGain();
+          g.gain.value = f[1] * c.fmod.depth; l.connect(g).connect(bq.frequency); fmodDone = true;
+        }
+        node.connect(bq); node = bq;
+      }
+      node.connect(modGain);
+      if (c.mod) {
+        const { rate, depth, p = 1, gust } = c.mod;
+        modGain.gain.value = 1 - depth;
+        const l = this.lfo(rate, !!gust);
+        const sh = ctx.createWaveShaper(); sh.curve = shaperCurve(p);
+        // shaper input domain is [-1,1]; curve indexed over that range, so x→((x+1)/2)^p
+        const g = ctx.createGain(); g.gain.value = depth;
+        l.connect(sh).connect(g).connect(modGain.gain);
+      }
+      let tail = modGain;
+      if (c.pan) { const pn = ctx.createStereoPanner(); pn.pan.value = c.pan; tail.connect(pn); tail = pn; }
+      tail.connect(out); out.connect(this.master);
+      return { spec: c, out, input: src, rec: c.src && c.src.startsWith('rec:') ? c.src.slice(4) : null };
+    });
+    // Free decoded recordings that the new soundscape doesn't use (keeps phone memory low).
+    const keep = new Set(this.channels.map((ch) => ch.rec).filter(Boolean));
+    for (const k of this.recs.keys()) if (!keep.has(k)) this.recs.delete(k);
+    this.channels.forEach((ch, i) => this.setLevel(i, values[i], true));
+  }
+
+  // Recorded loops are decoded at 32 kHz (plenty for ambience, ~1/3 less memory) and only when a slider is up.
+  loadRec(name) {
+    if (!this.recs.has(name)) {
+      const p = fetch(`sounds/${name}.ogg`).then((r) => { if (!r.ok) throw new Error(r.status); return r.arrayBuffer(); })
+        .then((ab) => new OfflineAudioContext(2, 1, 32000).decodeAudioData(ab.slice(0))
+          .catch(() => this.ctx.decodeAudioData(ab)));
+      p.catch((e) => { console.warn('sound failed', name, e); this.recs.delete(name); });
+      this.recs.set(name, p);
+    }
+    return this.recs.get(name);
+  }
+
+  ensureRec(ch, v) {
+    if (!ch.rec || ch.started || v < 0.01) return;
+    ch.started = true;
+    this.loadRec(ch.rec).then((buf) => {
+      if (!this.channels.includes(ch)) return;   // soundscape changed while loading
+      const s = this.ctx.createBufferSource(); s.buffer = buf; s.loop = true;
+      s.playbackRate.value = ch.spec.rate || 1;
+      s.connect(ch.input); s.start(0, rand(0, buf.duration)); this.nodes.push(s);
+      this.onLoading?.(-1);
+    }, () => { ch.started = false; this.onLoading?.(-1); });
+    this.onLoading?.(1);
+  }
+
+  teardown() {
+    for (const n of this.nodes || []) { try { n.stop(); } catch (e) {} try { n.disconnect(); } catch (e) {} }
+    for (const ch of this.channels) ch.out.disconnect();
+    this.nodes = []; this.channels = [];
+  }
+
+  setLevel(i, v, instant) {
+    const ch = this.channels[i]; if (!ch) return;
+    this.ensureRec(ch, v);
+    const target = (ch.spec.gain || 1) * v * v;
+    const p = ch.out.gain, t = this.ctx.currentTime;
+    p.cancelScheduledValues(t);
+    if (instant) p.setValueAtTime(target, t); else p.setTargetAtTime(target, t, 0.08);
+  }
+  // Slow glide used by "Animate"
+  glideLevel(i, v, seconds) {
+    const ch = this.channels[i]; if (!ch) return;
+    this.ensureRec(ch, v);
+    const p = ch.out.gain, t = this.ctx.currentTime;
+    p.cancelScheduledValues(t); p.setTargetAtTime((ch.spec.gain || 1) * v * v, t, seconds / 3);
+  }
+
+  setMaster(v) {
+    this.masterLevel = v;
+    if (this.master) this.master.gain.setTargetAtTime(v * v, this.ctx.currentTime, 0.05);
+  }
+
+  async play() {
+    this.init(); await this.ctx.resume();
+    const g = this.fade.gain, t = this.ctx.currentTime;
+    g.cancelScheduledValues(t); g.setValueAtTime(g.value, t); g.linearRampToValueAtTime(1, t + 1.5);
+    this.playing = true;
+  }
+
+  pause() {
+    if (!this.ctx) return;
+    const g = this.fade.gain, t = this.ctx.currentTime;
+    g.cancelScheduledValues(t); g.setValueAtTime(g.value, t); g.linearRampToValueAtTime(0, t + 0.6);
+    this.playing = false;
+    clearTimeout(this._suspendT);
+    this._suspendT = setTimeout(() => { if (!this.playing) this.ctx.suspend(); }, 800);
+  }
+
+  // Sleep timer scheduled inside the audio clock, so it fires even if the page is throttled.
+  scheduleFadeOut(minutes) {
+    if (!this.ctx) return;
+    const g = this.fade.gain, t = this.ctx.currentTime, end = t + minutes * 60;
+    const fadeLen = Math.min(90, minutes * 60 * 0.2);
+    g.cancelScheduledValues(t); g.setValueAtTime(g.value, t);
+    g.setValueAtTime(1, end - fadeLen); g.linearRampToValueAtTime(0, end);
+  }
+  cancelFadeOut() {
+    if (!this.ctx || !this.playing) return;
+    const g = this.fade.gain, t = this.ctx.currentTime;
+    g.cancelScheduledValues(t); g.setValueAtTime(g.value, t); g.linearRampToValueAtTime(1, t + 1);
+  }
+}
+
+
+const $ = (s) => document.querySelector(s);
+const engine = new Engine(); window.__eng = engine;
+const KEY = 'driftwave.v1';
+
+const state = Object.assign(
+  { scape: SCAPES[0].id, mixes: {}, presets: [], master: 0.8, timer: 0 },
+  JSON.parse(localStorage.getItem(KEY) || '{}'),
+);
+const save = () => localStorage.setItem(KEY, JSON.stringify(state));
+
+let scape, values, sliders = [], animTimer = null, timerEnd = 0, timerTick = null;
+const defaults = (s) => s.channels.map((c) => c.def ?? 0.5);
+
+// Recorded soundscapes need the sounds/ folder, which the single-file (file://) version doesn't have.
+const CAN_RECORDED = location.protocol !== 'file:';
+const AVAILABLE = SCAPES.filter((s) => CAN_RECORDED || !s.recorded);
+
+// Apply calibrated gain so each layer is comparable in loudness at the same slider position.
+for (const s of SCAPES) s.channels.forEach((c, i) => { c.gain = (s.trim ?? 1) * (c.level ?? 1) * (CALIB[`${s.id}:${i}`] ?? 1); });
+
+// ---- UI building ----
+function renderScapes() {
+  const nav = $('#scapes'); nav.innerHTML = '';
+  AVAILABLE.forEach((s, k) => {
+    if (s.recorded && !AVAILABLE[k - 1]?.recorded) {
+      const sep = document.createElement('span'); sep.className = 'scape-sep'; sep.textContent = 'Recorded'; nav.appendChild(sep);
+    }
+    const b = document.createElement('button');
+    b.className = 'scape'; b.style.setProperty('--h', s.hue);
+    b.innerHTML = `<b>${s.icon}</b>${s.name}`;
+    b.setAttribute('aria-current', s.id === state.scape);
+    b.onclick = () => selectScape(s.id);
+    nav.appendChild(b);
+  });
+}
+
+function renderMixer() {
+  const m = $('#mixer'); m.innerHTML = ''; sliders = [];
+  scape.channels.forEach((c, i) => {
+    const wrap = document.createElement('div'); wrap.className = 'ch';
+    const val = document.createElement('span'); val.className = 'val';
+    const r = document.createElement('input');
+    Object.assign(r, { type: 'range', min: 0, max: 1, step: 0.01, className: 'vs', id: `ch${i}` });
+    r.setAttribute('aria-label', c.name);
+    const lab = document.createElement('label'); lab.htmlFor = r.id; lab.textContent = hyphenate(c.name);
+    r.oninput = () => { values[i] = +r.value; paint(i); engine.channels.length && engine.setLevel(i, values[i]); persistMix(); };
+    wrap.append(val, r, lab); m.appendChild(wrap);
+    sliders.push({ r, val, wrap });
+  });
+  sliders.forEach((_, i) => paint(i));
+}
+
+// Soft hyphens so long words wrap neatly in the narrow slider columns.
+const SPLITS = { Songbirds: 'Song|birds', Woodpecker: 'Wood|pecker', Waterfall: 'Water|fall', Campfire: 'Camp|fire',
+  Downpour: 'Down|pour', Underwater: 'Under|water', Restaurant: 'Restau|rant', Typewriter: 'Type|writer',
+  Fireplace: 'Fire|place', Submarine: 'Sub|marine', Seagulls: 'Sea|gulls', Sailboat: 'Sail|boat', Airplane: 'Air|plane',
+  Highway: 'High|way', Crickets: 'Crick|ets', Crackle: 'Crack|le', Thunder: 'Thun|der', Distant: 'Dis|tant',
+  Morning: 'Morn|ing', Village: 'Vil|lage', Tempest: 'Tem|pest', Harbour: 'Har|bour', chatter: 'chat|ter',
+  Library: 'Li|brary', outside: 'out|side', purring: 'purr|ing', Ceiling: 'Ceil|ing', Singing: 'Sing|ing',
+  Cascade: 'Cas|cade', Trickle: 'Trick|le', Airflow: 'Air|flow', Turbine: 'Tur|bine', Shimmer: 'Shim|mer', Pebbles: 'Peb|bles', Canopy: 'Can|opy' };
+const hyphenate = (n) => n.split(' ').map((w) => (SPLITS[w] || w).replace('|', '\u00ad')).join(' ');
+
+function paint(i) {
+  const s = sliders[i], v = values[i];
+  s.r.value = v; s.r.style.setProperty('--p', `${v * 100}%`);
+  s.val.textContent = Math.round(v * 100);
+  s.wrap.classList.toggle('on', v > 0.01);
+}
+
+let persistT;
+function persistMix() { clearTimeout(persistT); persistT = setTimeout(() => { state.mixes[scape.id] = values.slice(); save(); }, 250); }
+
+function selectScape(id, vals) {
+  scape = AVAILABLE.find((s) => s.id === id) || AVAILABLE[0];
+  state.scape = scape.id;
+  values = (vals || state.mixes[scape.id] || defaults(scape)).slice();
+  document.documentElement.style.setProperty('--hue', scape.hue);
+  $('#scapeName').textContent = scape.name;
+  $('#scapeDesc').textContent = scape.desc;
+  renderScapes(); renderMixer();
+  if (engine.ctx) engine.build(scape, values);
+  state.mixes[scape.id] = values.slice(); save();
+  updateMediaSession();
+  if (engine.playing) nativeStart();
+}
+
+// ---- Native background playback (Android app only; no-op in the browser) ----
+const isNative = !!window.Capacitor?.isNativePlatform?.();
+const Native = isNative ? window.Capacitor.registerPlugin('Playback') : null;
+if (Native) Native.addListener('stop', () => { if (engine.playing) togglePlay(); });
+const nativeStart = () => Native?.start({ title: `Driftwave · ${scape.name}` }).catch(() => {});
+const nativeStop = () => Native?.stop().catch(() => {});
+
+// ---- Transport ----
+async function togglePlay() {
+  if (engine.playing) { engine.pause(); setPlayUI(false); stopTimer(); nativeStop(); return; }
+  const first = !engine.ctx;
+  engine.init();
+  if (first || !engine.channels.length) engine.build(scape, values);
+  engine.setMaster(state.master);
+  await engine.play(); setPlayUI(true); nativeStart();
+  if (state.timer) startTimer(state.timer);
+}
+function setPlayUI(on) {
+  const b = $('#playBtn'); b.textContent = on ? '❚❚' : '▶'; b.classList.toggle('on', on);
+  b.setAttribute('aria-label', on ? 'Pause' : 'Play');
+  if ('mediaSession' in navigator) navigator.mediaSession.playbackState = on ? 'playing' : 'paused';
+}
+
+// ---- Sleep timer ----
+function startTimer(min) {
+  stopTimer();
+  if (!min || !engine.playing) return;
+  engine.scheduleFadeOut(min);
+  timerEnd = Date.now() + min * 60000;
+  timerTick = setInterval(() => {
+    const left = timerEnd - Date.now();
+    if (left <= 0) { stopTimer(); engine.pause(); setPlayUI(false); nativeStop(); return; }
+    const m = Math.floor(left / 60000), s = Math.floor(left / 1000) % 60;
+    $('#timerLeft').textContent = `${m}:${String(s).padStart(2, '0')} left`;
+  }, 1000);
+}
+function stopTimer() { clearInterval(timerTick); timerTick = null; $('#timerLeft').textContent = ''; }
+
+// ---- Animate: sliders drift gently around where you set them ----
+function toggleAnimate() {
+  const b = $('#animBtn');
+  if (animTimer) { clearInterval(animTimer); animTimer = null; b.setAttribute('aria-pressed', 'false'); return; }
+  b.setAttribute('aria-pressed', 'true');
+  const base = values.slice();
+  animTimer = setInterval(() => {
+    values = values.map((v, i) => {
+      if (base[i] < 0.02) return v;
+      const nv = Math.min(1, Math.max(0, v + (Math.random() - 0.5) * 0.12));
+      return Math.min(base[i] + 0.25, Math.max(base[i] - 0.25, nv));
+    });
+    values.forEach((v, i) => { paint(i); engine.channels.length && engine.glideLevel(i, v, 4); });
+  }, 4000);
+}
+
+function shuffle() {
+  values = values.map(() => Math.round(Math.pow(Math.random(), 1.3) * 100) / 100);
+  values.forEach((v, i) => { paint(i); engine.channels.length && engine.setLevel(i, v); });
+  persistMix();
+}
+function reset() {
+  values = defaults(scape);
+  values.forEach((v, i) => { paint(i); engine.channels.length && engine.setLevel(i, v); });
+  persistMix();
+}
+
+// ---- Presets ----
+function renderPresets() {
+  const ul = $('#presetList'); ul.innerHTML = '';
+  if (!state.presets.length) { ul.innerHTML = '<li><small>No saved mixes yet.</small></li>'; return; }
+  state.presets.forEach((p, idx) => {
+    const li = document.createElement('li');
+    const sc = AVAILABLE.find((s) => s.id === p.scape);
+    if (!sc) return;
+    const load = document.createElement('button'); load.className = 'load';
+    load.innerHTML = `${escapeHtml(p.name)}<small>${sc ? sc.name : p.scape}</small>`;
+    load.onclick = () => { selectScape(p.scape, p.values); closeDrawer(); };
+    const del = document.createElement('button'); del.className = 'del'; del.textContent = '×';
+    del.setAttribute('aria-label', `Delete ${p.name}`);
+    del.onclick = () => { state.presets.splice(idx, 1); save(); renderPresets(); };
+    li.append(load, del); ul.appendChild(li);
+  });
+}
+const escapeHtml = (s) => s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+let pending = 0;
+engine.onLoading = (d) => { pending = Math.max(0, pending + d); $('#loading').hidden = pending === 0; };
+
+function renderCredits() {
+  $('#creditList').innerHTML = CREDITS.map((c) =>
+    `<li><a href="${c.url}" target="_blank" rel="noopener">${escapeHtml(c.what)}</a> by ${escapeHtml(c.who)} (${c.license})</li>`).join('');
+  $('#creditNote').textContent = CREDITS_NOTE;
+}
+function openDrawer() { renderCredits(); renderPresets(); $('#drawer').hidden = false; }
+function closeDrawer() { $('#drawer').hidden = true; }
+
+// ---- Media session (lock-screen / notification controls where supported) ----
+function updateMediaSession() {
+  if (!('mediaSession' in navigator)) return;
+  navigator.mediaSession.metadata = new MediaMetadata({ title: scape.name, artist: 'Driftwave',
+    artwork: [{ src: 'icons/icon-512.png', sizes: '512x512', type: 'image/png' }] });
+  navigator.mediaSession.setActionHandler('play', () => { if (!engine.playing) togglePlay(); });
+  navigator.mediaSession.setActionHandler('pause', () => { if (engine.playing) togglePlay(); });
+}
+
+// ---- Wire up ----
+$('#playBtn').onclick = togglePlay;
+$('#master').value = state.master;
+$('#master').oninput = (e) => { state.master = +e.target.value; engine.setMaster(state.master); save(); };
+$('#animBtn').onclick = toggleAnimate;
+$('#randBtn').onclick = shuffle;
+$('#resetBtn').onclick = reset;
+$('#timer').value = String(state.timer);
+$('#timer').onchange = (e) => {
+  state.timer = +e.target.value; save();
+  if (state.timer) startTimer(state.timer); else { stopTimer(); engine.cancelFadeOut(); }
+};
+$('#menuBtn').onclick = openDrawer;
+$('#closeDrawer').onclick = closeDrawer;
+$('#drawer').onclick = (e) => { if (e.target.id === 'drawer') closeDrawer(); };
+$('#saveForm').onsubmit = (e) => {
+  e.preventDefault();
+  const name = $('#presetName').value.trim(); if (!name) return;
+  state.presets.unshift({ name, scape: scape.id, values: values.slice() });
+  save(); $('#presetName').value = ''; renderPresets();
+};
+document.addEventListener('keydown', (e) => { if (e.code === 'Space' && e.target === document.body) { e.preventDefault(); togglePlay(); } });
+
+selectScape(state.scape);
+
+// Offline support (service workers don't run from file:// or inside the Android wrapper's local scheme — not needed there).
+if ('serviceWorker' in navigator && location.protocol.startsWith('http') && !isNative) {
+  navigator.serviceWorker.register('sw.js');
+}
+
+</script>
+</body>
+</html>

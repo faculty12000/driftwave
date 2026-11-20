@@ -1,0 +1,20 @@
+{
+  "name": "driftwave",
+  "version": "1.2.0",
+  "private": true,
+  "description": "Offline ambient noise generator (web + Android)",
+  "scripts": {
+    "serve": "python3 -m http.server 8080 --directory www",
+    "single": "python3 tools/build-single.py",
+    "pc": "rm -rf pc/app && cp -r www pc/app && mkdir -p dist && rm -f dist/Driftwave-PC.zip && cd pc && zip -qr ../dist/Driftwave-PC.zip . -x '*.map'",
+    "android:sync": "cp node_modules/@capacitor/core/dist/capacitor.js www/js/vendor/ && cap sync android",
+    "android:apk": "npm run android:sync && cd android && ./gradlew assembleDebug"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^8.6.2"
+  },
+  "dependencies": {
+    "@capacitor/android": "^8.6.2",
+    "@capacitor/core": "^8.6.2"
+  }
+}

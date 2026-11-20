@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0e1320">
+  <meta name="description" content="Offline ambient noise generator">
+  <title>Driftwave</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="top">
+    <div class="brand"><img src="icons/icon.svg" alt="" width="28" height="28"><span>Driftwave</span></div>
+    <button id="menuBtn" class="icon-btn" aria-label="Presets">☰</button>
+  </header>
+
+  <nav id="scapes" class="scapes" aria-label="Soundscapes"></nav>
+
+  <main>
+    <section class="hero">
+      <h1 id="scapeName"></h1>
+      <p id="scapeDesc"></p>
+      <p id="loading" class="loading" hidden>Loading sounds…</p>
+    </section>
+
+    <section class="mixer" id="mixer" aria-label="Channel levels"></section>
+
+    <section class="transport">
+      <button id="playBtn" class="play" aria-label="Play">▶</button>
+      <label class="vol">
+        <span>Volume</span>
+        <input id="master" type="range" min="0" max="1" step="0.01" value="0.8">
+      </label>
+    </section>
+
+    <section class="tools">
+      <button id="animBtn" class="chip" aria-pressed="false">∿ Animate</button>
+      <button id="randBtn" class="chip">⚄ Shuffle</button>
+      <button id="resetBtn" class="chip">↺ Reset</button>
+      <label class="chip select">⏾
+        <select id="timer" aria-label="Sleep timer">
+          <option value="0">No timer</option>
+          <option value="15">15 min</option>
+          <option value="30">30 min</option>
+          <option value="45">45 min</option>
+          <option value="60">1 hour</option>
+          <option value="90">1.5 hours</option>
+          <option value="120">2 hours</option>
+          <option value="480">8 hours</option>
+        </select>
+      </label>
+      <span id="timerLeft" class="timer-left"></span>
+    </section>
+  </main>
+
+  <aside id="drawer" class="drawer" hidden>
+    <div class="drawer-inner">
+      <h2>Presets</h2>
+      <form id="saveForm" class="save">
+        <input id="presetName" placeholder="Name this mix" maxlength="40" required>
+        <button class="chip">Save</button>
+      </form>
+      <ul id="presetList" class="presets"></ul>
+      <p class="hint">Everything runs on this device and works offline. Synth soundscapes are generated live; recorded ones are bundled with the app.</p>
+      <details class="credits"><summary>Sound credits &amp; licenses</summary><ul id="creditList"></ul><p id="creditNote" class="hint"></p></details>
+      <button id="closeDrawer" class="chip">Close</button>
+    </div>
+  </aside>
+
+  <script src="js/vendor/capacitor.js"></script>
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

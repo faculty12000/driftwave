@@ -1,0 +1,19 @@
+<script type="module">
+import { Engine } from '/js/engine.js';
+import { SCAPES } from '/js/scapes.js';
+const out = {}, info = {};
+for (const s of SCAPES) for (let i = 0; i < s.channels.length; i++) {
+  const ctx = new OfflineAudioContext(2, 44100 * 8, 44100);
+  const e = new Engine(); e.ctx = ctx; e.master = ctx.createGain(); e.master.connect(ctx.destination);
+  const c = { ...s.channels[i], gain: 1 }; delete c.mod;
+  const vals = s.channels.map(() => 0); vals[0] = 1;
+  e.build({ channels: [c] }, [1]);
+  const buf = await ctx.startRendering();
+  let sum = 0, peak = 0; const n = buf.length;
+  for (let ch = 0; ch < 2; ch++) { const d = buf.getChannelData(ch); for (let k = 4410; k < n; k++) { sum += d[k] * d[k]; peak = Math.max(peak, Math.abs(d[k])); } }
+  const rms = Math.sqrt(sum / (2 * (n - 4410)));
+  let norm = 0.12 / rms; norm = Math.min(norm, 1.6 / peak, 12);
+  out[`${s.id}:${i}`] = +norm.toFixed(3); info[`${s.id}:${i} ${c.name}`] = [rms.toFixed(4), peak.toFixed(3), norm.toFixed(2)];
+}
+window.RESULT = { out, info };
+</script>

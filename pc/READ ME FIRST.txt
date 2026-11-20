@@ -1,0 +1,25 @@
+DRIFTWAVE for PC — how to start it
+==================================
+
+1. Unzip this whole folder somewhere (e.g. Documents). Don't run it from inside the zip.
+
+2. Double-click the launcher for your computer:
+     Windows : "Start Driftwave (Windows).bat"
+     Mac     : "Start Driftwave (Mac).command"
+               (first time: right-click it > Open > Open, because it's not from the App Store)
+     Linux   : ./start-driftwave-linux.sh
+
+3. Your browser opens Driftwave. Press the big play button.
+   A small black window stays open: that's the app's local server. Leave it open while
+   listening; close it when you're done.
+
+No internet needed. Nothing is installed. The app only listens on this computer (localhost).
+
+Optional: in Chrome or Edge, click the "Install" icon in the address bar to get a
+Driftwave desktop/start-menu icon that opens in its own window. That icon works even
+without the launcher running, after you've opened the app once.
+
+Quick alternative: "driftwave-offline.html" in this folder — just double-click it. It has only the
+8 synthesized soundscapes (no recordings), but needs no launcher at all.
+
+Windows note: if SmartScreen says "Windows protected your PC", click "More info" > "Run anyway".
