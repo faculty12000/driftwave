@@ -2,6 +2,15 @@
 # Copies Driftwave to %LOCALAPPDATA%\Programs\Driftwave and adds Start menu + desktop shortcuts.
 # You can delete the downloaded folder afterwards.
 $ErrorActionPreference = 'Stop'
+$log = Join-Path $env:TEMP 'driftwave-install.log'
+try { Start-Transcript -Path $log -Force | Out-Null } catch { }
+trap {
+  Write-Host ''
+  Write-Host "  Something went wrong: $_" -ForegroundColor Red
+  Write-Host "  Details were saved to: $log"
+  try { Stop-Transcript | Out-Null } catch { }
+  Read-Host 'Press Enter to close'; exit 1
+}
 $src  = $PSScriptRoot
 $dest = Join-Path $env:LOCALAPPDATA 'Programs\Driftwave'
 
@@ -56,9 +65,15 @@ if ($ans -match '^[yY]') {
   Remove-Item $startup -Force
 }
 
+if (-not (Test-Path $startMenu)) { throw "The Start menu shortcut was not created at $startMenu" }
 Write-Host ''
-Write-Host '  Done! To pin it: open Start, search "Driftwave", right-click it, then'
-Write-Host '  choose "Pin to Start" or "Pin to taskbar".'
+Write-Host '  Done! Driftwave is now in your Start menu under "All apps" (or search "Driftwave").'
 Write-Host ''
+Write-Host '  Windows does not let programs pin themselves, so pin it yourself:'
+Write-Host '  a folder will open with "Driftwave" selected. Right-click it, then choose'
+Write-Host '  "Pin to Start" (or "Show more options" > "Pin to taskbar" on Windows 11).'
+Write-Host ''
+Start-Process explorer.exe -ArgumentList "/select,`"$startMenu`""
+try { Stop-Transcript | Out-Null } catch { }
 $open = Read-Host '  Open Driftwave now? (Y/n)'
 if ($open -notmatch '^[nN]') { Start-Process $ps -ArgumentList "-NoProfile -ExecutionPolicy Bypass -WindowStyle Minimized -File `"$dest\server.ps1`"" -WindowStyle Minimized }
