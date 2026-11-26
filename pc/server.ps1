@@ -1,27 +1,38 @@
 # Driftwave local launcher for Windows. Uses only built-in Windows PowerShell; nothing to install.
-# Serves the app folder at http://localhost:<port>/ (this PC only) and opens your browser.
+# Serves the app folder at http://localhost:8517/ (this PC only) and opens your browser.
+#   -NoBrowser : just start the server (used by the optional "start when I sign in" shortcut)
+param([switch]$NoBrowser)
 $ErrorActionPreference = 'Stop'
+$port = 8517
+$url = "http://localhost:$port/"
+
+# Already running? Then just open it. (Always using the same port keeps your saved presets.)
+try {
+  $r = Invoke-WebRequest -Uri ($url + 'manifest.webmanifest') -UseBasicParsing -TimeoutSec 2
+  if ($r.Content -match 'Driftwave') {
+    if (-not $NoBrowser) { Start-Process $url }
+    exit 0
+  }
+} catch { }
+
 $root = Join-Path $PSScriptRoot 'app'
 $types = @{ '.html'='text/html; charset=utf-8'; '.js'='text/javascript; charset=utf-8'; '.css'='text/css; charset=utf-8';
   '.json'='application/json'; '.webmanifest'='application/manifest+json'; '.svg'='image/svg+xml'; '.png'='image/png';
   '.ogg'='audio/ogg'; '.txt'='text/plain'; '.ico'='image/x-icon' }
 
-$listener = $null
-foreach ($port in 8517..8530) {
-  try {
-    $l = New-Object System.Net.HttpListener
-    $l.Prefixes.Add("http://localhost:$port/")
-    $l.Start(); $listener = $l; break
-  } catch { }
+$listener = New-Object System.Net.HttpListener
+$listener.Prefixes.Add($url)
+try { $listener.Start() } catch {
+  Write-Host "Port $port is being used by another program, so Driftwave can't start."
+  Read-Host 'Press Enter to close'; exit 1
 }
-if (-not $listener) { Write-Host 'Could not find a free port (8517-8530).'; Read-Host 'Press Enter to close'; exit 1 }
 
-$url = "http://localhost:$port/"
+$host.UI.RawUI.WindowTitle = 'Driftwave (close this window to quit)'
 Write-Host ''
 Write-Host "  Driftwave is running at $url"
-Write-Host '  Keep this window open while you listen. Close it to quit.'
+Write-Host '  Keep this window open (you can minimize it). Close it to quit.'
 Write-Host ''
-Start-Process $url
+if (-not $NoBrowser) { Start-Process $url }
 
 $rootFull = [System.IO.Path]::GetFullPath($root)
 while ($listener.IsListening) {

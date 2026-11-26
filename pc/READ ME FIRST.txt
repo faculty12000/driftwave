@@ -3,7 +3,15 @@ DRIFTWAVE for PC — how to start it
 
 1. Unzip this whole folder somewhere (e.g. Documents). Don't run it from inside the zip.
 
-2. Double-click the launcher for your computer:
+2. WINDOWS (recommended): double-click "Install Driftwave (Windows).bat".
+   It copies Driftwave into your user programs folder (no admin needed) and adds:
+     - a Start menu entry (search "Driftwave"; right-click > Pin to Start / Pin to taskbar)
+     - a desktop shortcut
+     - optionally: start automatically when you sign in
+   Afterwards you can delete the downloaded folder. To remove it later, run
+   "Uninstall Driftwave.bat" (also in %LOCALAPPDATA%\Programs\Driftwave).
+
+   Or, to run without installing, double-click the launcher for your computer:
      Windows : "Start Driftwave (Windows).bat"
      Mac     : "Start Driftwave (Mac).command"
                (first time: right-click it > Open > Open, because it's not from the App Store)

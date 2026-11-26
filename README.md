@@ -27,7 +27,7 @@ controls, and on Android a background-playback notification with a Stop button.
 | Option | How |
 |---|---|
 | Single file (simplest) | Open `downloads/driftwave-offline.html` in any modern browser. No server needed. (Synth soundscapes only, since browsers block loading the sound files from disk.) |
-| PC (full version) | Unzip `downloads/Driftwave-PC.zip` and double-click the launcher for your system. Rebuild it with `npm run pc`. |
+| PC (full version) | Unzip `downloads/Driftwave-PC.zip`. Windows: run `Install Driftwave (Windows).bat` for Start menu/desktop shortcuts. Mac/Linux: double-click the launcher. Rebuild it with `npm run pc`. |
 | Installable web app (PWA) | `npm run serve` → open http://localhost:8080, then "Install app". After the first load it works offline. |
 | Android APK | Install `downloads/Driftwave-1.2-debug.apk` on your phone (allow "install unknown apps"). |
 
