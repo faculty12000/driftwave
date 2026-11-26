@@ -23,8 +23,7 @@ No account, no ads, no tracking, no internet needed. Everything runs on your own
 | **Android** | [Driftwave-1.2-debug.apk](downloads/Driftwave-1.2-debug.apk) | Open on your phone and allow "Install unknown apps". |
 | **Any browser** | [driftwave-offline.html](downloads/driftwave-offline.html) | Just open it. Single file, synthesized soundscapes only. |
 
-The same files are attached to the latest [Release](../../releases/latest). On a file's page, use the
-**Download raw file** (↓) button.
+Click a file name above, then the **Download raw file** (↓) button on the right.
 
 ## What's inside
 
